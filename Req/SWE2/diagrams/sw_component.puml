@@ -1,0 +1,79 @@
+@startuml ABS_Software_Architecture
+' ABS Software Architecture - SWE.2
+' Standalone PlantUML source for RAG ingestion and reuse
+
+skinparam packageStyle rectangle
+skinparam backgroundColor #FAFAFA
+skinparam component {
+  BackgroundColor #C8E6C9
+  BorderColor #2E7D32
+  ArrowColor #1B5E20
+}
+skinparam note {
+  BackgroundColor #FFFDE7
+}
+
+title ABS ECU Software Architecture (SWE.2)
+
+package "Application Layer" as APP {
+  [ABS Control Algorithm] as ABS_CTRL
+  [Slip Ratio Calculator] as SLIP_CALC
+  [Vehicle Speed Estimator] as VSE
+}
+
+package "Service Layer" as SVC {
+  [Fault Manager] as FAULT_MGR
+  [Diagnostic Service (UDS)] as DIAG
+  [NVM Manager] as NVM
+  [OS / RTOS Abstraction] as RTOS
+}
+
+package "Driver Layer" as DRV {
+  [WSS Driver (4 channels)] as WSS_DRV
+  [HCU Driver (valves+pump)] as HCU_DRV
+  [CAN Driver (Tx/Rx/Diag)] as CAN_DRV
+}
+
+package "Hardware Abstraction Layer" as HAL {
+  [HAL ADC] as HAL_ADC
+  [HAL GPIO] as HAL_GPIO
+  [HAL PWM] as HAL_PWM
+  [HAL CAN Controller] as HAL_CAN
+  [HAL NVM (EEPROM)] as HAL_NVM
+  [HAL Timer (capture)] as HAL_TIMER
+}
+
+' Application data flow
+WSS_DRV --> VSE : wheel speeds 4ch @1ms
+WSS_DRV --> SLIP_CALC : wheel speeds 4ch
+VSE --> SLIP_CALC : reference speed
+SLIP_CALC --> ABS_CTRL : slip ratios 4ch
+ABS_CTRL --> HCU_DRV : valve commands
+
+' Service layer interfaces
+FAULT_MGR <-- WSS_DRV : fault status
+FAULT_MGR <-- HCU_DRV : fault status
+FAULT_MGR <-- CAN_DRV : bus error status
+FAULT_MGR --> DIAG : active DTCs
+FAULT_MGR --> NVM : store DTCs
+DIAG <--> CAN_DRV : UDS request/response
+RTOS --> ABS_CTRL : 5ms task
+RTOS --> FAULT_MGR : 5ms task
+RTOS --> CAN_DRV : 10ms tx task
+
+' Driver to HAL
+WSS_DRV --> HAL_TIMER : pulse capture
+WSS_DRV --> HAL_ADC : sensor current
+HCU_DRV --> HAL_GPIO : solenoid control
+HCU_DRV --> HAL_PWM : pump PWM
+HCU_DRV --> HAL_ADC : valve current
+CAN_DRV --> HAL_CAN : TX/RX frames
+NVM --> HAL_NVM : read/write
+
+note right of ABS_CTRL
+  4 independent channel state machines
+  INACTIVE -> BUILD -> HOLD -> RELEASE
+  Cycle: 5ms | Select-low: rear axle
+end note
+
+@enduml

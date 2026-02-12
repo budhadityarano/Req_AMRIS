@@ -1,0 +1,76 @@
+@startuml ABS_System_Architecture
+' ABS System Component Architecture - SYS.3
+' Standalone PlantUML source for RAG ingestion and reuse
+
+skinparam componentStyle rectangle
+skinparam backgroundColor #FAFAFA
+skinparam component {
+  BackgroundColor #BFD7EA
+  BorderColor #2E86AB
+  ArrowColor #1565C0
+}
+skinparam note {
+  BackgroundColor #FFFDE7
+}
+
+title Anti-Lock Braking System - System Architecture (SYS.3)
+
+package "Driver Input" {
+  [Brake Pedal\nSensor] as BPS
+}
+
+package "Wheel Speed Sensing" {
+  [WSS Front Left] as WSS_FL
+  [WSS Front Right] as WSS_FR
+  [WSS Rear Left] as WSS_RL
+  [WSS Rear Right] as WSS_RR
+}
+
+package "ABS Control Unit" as ECU_PKG {
+  [ABS ECU\n(32-bit MCU)] as ECU
+}
+
+package "Hydraulic Actuation" {
+  [Hydraulic Control Unit (HCU)] as HCU
+  [Brake Caliper FL] as BRK_FL
+  [Brake Caliper FR] as BRK_FR
+  [Brake Caliper RL] as BRK_RL
+  [Brake Caliper RR] as BRK_RR
+}
+
+package "Vehicle Network" {
+  [CAN Bus 500 kbps] as CAN
+}
+
+package "Driver Feedback" {
+  [ABS Warning Lamp] as LAMP
+}
+
+BPS --> ECU : brake pressure signal
+WSS_FL --> ECU : wheel speed pulse (12V, ~1kHz)
+WSS_FR --> ECU : wheel speed pulse (12V, ~1kHz)
+WSS_RL --> ECU : wheel speed pulse (12V, ~1kHz)
+WSS_RR --> ECU : wheel speed pulse (12V, ~1kHz)
+ECU --> HCU : solenoid valve commands (4 inlet + 4 outlet)
+ECU --> HCU : pump motor PWM control
+ECU --> LAMP : fault indication (12V digital)
+ECU <--> CAN : wheel speeds, ABS status, diagnostics
+HCU --> BRK_FL : hydraulic pressure
+HCU --> BRK_FR : hydraulic pressure
+HCU --> BRK_RL : hydraulic pressure
+HCU --> BRK_RR : hydraulic pressure
+
+note right of ECU
+  Processor: 32-bit MCU @ 80 MHz
+  Control cycle: 5 ms (200 Hz)
+  RAM: 64 KB  ROM: 512 KB
+  Operating voltage: 9-16 V DC
+end note
+
+note bottom of HCU
+  4x inlet solenoid valves
+  4x outlet solenoid valves
+  1x hydraulic pump motor
+end note
+
+@enduml

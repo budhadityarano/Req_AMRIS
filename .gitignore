@@ -1,0 +1,32 @@
+# Sphinx build output
+build/
+Req/_build/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+.eggs/
+*.egg
+*.pyc
+*.pyo
+
+# Virtual environments
+venv/
+env/
+.env/
+.venv/
+.python-version
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# PlantUML generated images (keep source .puml files)
+*.svg

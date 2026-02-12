@@ -1,0 +1,16 @@
+# Core Sphinx and extensions
+sphinx>=7.2.0
+sphinx-needs>=2.0.0
+sphinxcontrib-plantuml>=0.27
+furo>=2023.9.10
+sphinx-autobuild>=2021.3.14
+
+# RAG system dependencies (Future Scope - uncomment when needed)
+# chromadb>=0.4.0
+# sentence-transformers>=2.2.2
+# langchain>=0.1.0
+# langchain-community>=0.0.10
+# anthropic>=0.18.0
+# Pillow>=10.0.0
+# qdrant-client>=1.7.0
+# networkx>=3.0
